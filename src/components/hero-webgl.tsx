@@ -114,8 +114,8 @@ const Scene = () => {
 }
 
 export const Hero3DWebGL = () => {
-  const titleWords = "Synapse AI".split(" ")
-  const subtitle = "Нейроинтерфейсы нового поколения."
+  const titleWords = "Content AI".split(" ")
+  const subtitle = "Создавайте тексты, изображения и видео за секунды с помощью искусственного интеллекта."
   const [visibleWords, setVisibleWords] = useState(0)
   const [subtitleVisible, setSubtitleVisible] = useState(false)
   const [delays, setDelays] = useState<number[]>([])
@@ -172,6 +172,20 @@ export const Hero3DWebGL = () => {
           >
             {subtitle}
           </div>
+        </div>
+        <div
+          className={`mt-8 flex flex-col sm:flex-row gap-4 justify-center pointer-events-auto normal-case ${subtitleVisible ? "fade-in-subtitle" : ""}`}
+          style={{
+            animationDelay: `${titleWords.length * 0.13 + 0.5 + subtitleDelay}s`,
+            opacity: subtitleVisible ? undefined : 0,
+          }}
+        >
+          <button className="bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-3 rounded-lg text-base transition-colors duration-200">
+            Начать бесплатно
+          </button>
+          <button className="border border-white/40 hover:border-red-500 text-white font-bold px-8 py-3 rounded-lg text-base transition-colors duration-200 backdrop-blur-sm">
+            Смотреть тарифы
+          </button>
         </div>
       </div>
 

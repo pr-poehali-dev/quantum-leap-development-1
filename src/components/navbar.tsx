@@ -12,7 +12,7 @@ export function Navbar() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <h1 className="font-orbitron text-xl font-bold text-white">
-              Synapse<span className="text-red-500">AI</span>
+              Content<span className="text-red-500">AI</span>
             </h1>
           </div>
 
@@ -20,23 +20,29 @@ export function Navbar() {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
               <a
-                href="#technology"
+                href="#features"
                 className="font-geist text-white hover:text-red-500 transition-colors duration-200"
               >
-                Технологии
+                Инструменты
               </a>
-              <a href="#safety" className="font-geist text-white hover:text-red-500 transition-colors duration-200">
-                Безопасность
+              <a href="#technology" className="font-geist text-white hover:text-red-500 transition-colors duration-200">
+                Тарифы
+              </a>
+              <a href="#applications" className="font-geist text-white hover:text-red-500 transition-colors duration-200">
+                Применения
               </a>
               <a href="#faq" className="font-geist text-white hover:text-red-500 transition-colors duration-200">
-                Вопросы
+                FAQ
               </a>
             </div>
           </div>
 
           {/* CTA Button */}
-          <div className="hidden md:block">
-            <Button className="bg-red-500 hover:bg-red-600 text-white font-geist border-0">В лист ожидания</Button>
+          <div className="hidden md:flex items-center gap-3">
+            <a href="#" className="font-geist text-white hover:text-red-500 transition-colors duration-200 text-sm">
+              Войти
+            </a>
+            <Button className="bg-red-500 hover:bg-red-600 text-white font-geist border-0">Начать бесплатно</Button>
           </div>
 
           {/* Mobile menu button */}
@@ -55,29 +61,39 @@ export function Navbar() {
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-black/98 border-t border-red-500/20">
               <a
+                href="#features"
+                className="block px-3 py-2 font-geist text-white hover:text-red-500 transition-colors duration-200"
+                onClick={() => setIsOpen(false)}
+              >
+                Инструменты
+              </a>
+              <a
                 href="#technology"
                 className="block px-3 py-2 font-geist text-white hover:text-red-500 transition-colors duration-200"
                 onClick={() => setIsOpen(false)}
               >
-                Технологии
+                Тарифы
               </a>
               <a
-                href="#safety"
+                href="#applications"
                 className="block px-3 py-2 font-geist text-white hover:text-red-500 transition-colors duration-200"
                 onClick={() => setIsOpen(false)}
               >
-                Безопасность
+                Применения
               </a>
               <a
                 href="#faq"
                 className="block px-3 py-2 font-geist text-white hover:text-red-500 transition-colors duration-200"
                 onClick={() => setIsOpen(false)}
               >
-                Вопросы
+                FAQ
               </a>
-              <div className="px-3 py-2">
+              <div className="px-3 py-2 flex flex-col gap-2">
+                <Button variant="outline" className="w-full border-white/20 text-white bg-transparent">
+                  Войти
+                </Button>
                 <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-geist border-0">
-                  В лист ожидания
+                  Начать бесплатно
                 </Button>
               </div>
             </div>

@@ -1,53 +1,54 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import Icon from "@/components/ui/icon"
 
 const features = [
   {
-    title: "Адаптивная нейрообработка",
-    description: "Самооптимизирующиеся алгоритмы, которые обучаются на нейронных паттернах и улучшают интерпретацию сигналов.",
-    icon: "brain",
-    badge: "ИИ",
+    title: "Генерация текстов",
+    description: "Статьи, посты, сценарии, email-рассылки, описания товаров — задайте тон, стиль и ключевые слова, ИИ сделает остальное.",
+    icon: "FileText",
+    badge: "Текст",
   },
   {
-    title: "Медицинская защита",
-    description: "Шифрование по стандартам FDA со сквозной защитой конфиденциальных нейронных данных.",
-    icon: "lock",
-    badge: "Сертификат",
+    title: "Редактирование и улучшение",
+    description: "Проверка грамматики, уникальности, перефразирование и расширение текста. Ваш личный редактор 24/7.",
+    icon: "PenLine",
+    badge: "Редактор",
   },
   {
-    title: "Интуитивное управление",
-    description: "Естественная трансляция мыслей в действия с откликом менее миллисекунды и точностью 99,7%.",
-    icon: "globe",
-    badge: "Точность",
+    title: "Генерация изображений",
+    description: "Создавайте иллюстрации, баннеры и визуалы по текстовому описанию. Подходит для соцсетей, рекламы и сайтов.",
+    icon: "Image",
+    badge: "Визуал",
   },
   {
-    title: "Предиктивная калибровка",
-    description: "ML-модели, которые предугадывают намерения пользователя и оптимизируют нейронные пути.",
-    icon: "zap",
-    badge: "Умный",
+    title: "Переводы и транскрибация",
+    description: "Перевод текстов на десятки языков, преобразование аудио в текст и текста в речь за считанные секунды.",
+    icon: "Languages",
+    badge: "Перевод",
   },
   {
-    title: "Биометрическая интеграция",
-    description: "Бесшовная синхронизация с мониторингом жизненных показателей для контроля здоровья.",
-    icon: "link",
-    badge: "Связь",
+    title: "Презентации и документы",
+    description: "Шаблоны, автоматическое заполнение, визуализация данных. Профессиональные слайды без дизайнера.",
+    icon: "Presentation",
+    badge: "Документы",
   },
   {
-    title: "Поддержка XR",
-    description: "Нативная совместимость с AR/VR-средами для терапевтических и рабочих приложений.",
-    icon: "target",
-    badge: "XR Ready",
+    title: "API для разработчиков",
+    description: "Встраивайте ИИ-инструменты в свои сервисы. Интеграция с CMS, CRM, соцсетями и email-платформами.",
+    icon: "Code2",
+    badge: "API",
   },
 ]
 
 export function FeaturesSection() {
   return (
-    <section className="py-24 px-6 bg-background">
+    <section id="features" className="py-24 px-6 bg-background">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4 font-sans">Возможности нового поколения</h2>
+          <h2 className="text-4xl font-bold text-foreground mb-4 font-sans">Всё для создания контента</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Почувствуйте будущее с технологиями, которые переопределяют возможное
+            Мощные ИИ-инструменты в одном месте — от идеи до готового материала за минуты
           </p>
         </div>
 
@@ -60,14 +61,7 @@ export function FeaturesSection() {
             >
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-3xl">
-                    {feature.icon === "brain" && "&#129504;"}
-                    {feature.icon === "lock" && "&#128274;"}
-                    {feature.icon === "globe" && "&#127760;"}
-                    {feature.icon === "zap" && "&#9889;"}
-                    {feature.icon === "link" && "&#128279;"}
-                    {feature.icon === "target" && "&#127919;"}
-                  </span>
+                  <Icon name={feature.icon} size={32} className="text-red-500" fallback="Zap" />
                   <Badge variant="secondary" className="bg-accent text-accent-foreground">
                     {feature.badge}
                   </Badge>
