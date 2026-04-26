@@ -10,34 +10,34 @@ const features = [
     badge: "Текст",
   },
   {
-    title: "Редактирование и улучшение",
-    description: "Проверка грамматики, уникальности, перефразирование и расширение текста. Ваш личный редактор 24/7.",
+    title: "Контент для соцсетей",
+    description: "Посты, сторис, подписи к фото, хэштеги и контент-планы для Instagram, VK, Telegram и TikTok — сразу в нужном формате.",
+    icon: "Share2",
+    badge: "Соцсети",
+  },
+  {
+    title: "Генерация музыки",
+    description: "Создавайте треки в любом жанре по текстовому описанию: поп, рок, электронная, джаз, эмбиент — за считанные секунды.",
+    icon: "Music",
+    badge: "Музыка",
+  },
+  {
+    title: "Музыкальные клипы",
+    description: "Автоматическое создание видеоклипа на вашу музыку или описание. ИИ подбирает визуальный ряд, монтаж и стиль.",
+    icon: "Clapperboard",
+    badge: "Видео",
+  },
+  {
+    title: "Песни под ваш голос",
+    description: "Запишите свой голос через микрофон или загрузите аудиофайл — ИИ создаст песню в вашем уникальном стиле и тембре.",
+    icon: "Mic",
+    badge: "Голос",
+  },
+  {
+    title: "Редактирование и перевод",
+    description: "Проверка грамматики, уникальности, перефразирование, перевод на 50+ языков и транскрибация аудио в текст.",
     icon: "PenLine",
     badge: "Редактор",
-  },
-  {
-    title: "Генерация изображений",
-    description: "Создавайте иллюстрации, баннеры и визуалы по текстовому описанию. Подходит для соцсетей, рекламы и сайтов.",
-    icon: "Image",
-    badge: "Визуал",
-  },
-  {
-    title: "Переводы и транскрибация",
-    description: "Перевод текстов на десятки языков, преобразование аудио в текст и текста в речь за считанные секунды.",
-    icon: "Languages",
-    badge: "Перевод",
-  },
-  {
-    title: "Презентации и документы",
-    description: "Шаблоны, автоматическое заполнение, визуализация данных. Профессиональные слайды без дизайнера.",
-    icon: "Presentation",
-    badge: "Документы",
-  },
-  {
-    title: "API для разработчиков",
-    description: "Встраивайте ИИ-инструменты в свои сервисы. Интеграция с CMS, CRM, соцсетями и email-платформами.",
-    icon: "Code2",
-    badge: "API",
   },
 ]
 
@@ -48,7 +48,7 @@ export function FeaturesSection() {
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-foreground mb-4 font-sans">Всё для создания контента</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Мощные ИИ-инструменты в одном месте — от идеи до готового материала за минуты
+            Тексты, музыка, видео, соцсети и голосовые треки — в одной ИИ-платформе
           </p>
         </div>
 
@@ -75,6 +75,16 @@ export function FeaturesSection() {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <a
+            href="/tools"
+            className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-3 rounded-xl text-base transition-colors duration-200"
+          >
+            <Icon name="Zap" size={18} />
+            Попробовать инструменты
+          </a>
         </div>
       </div>
     </section>

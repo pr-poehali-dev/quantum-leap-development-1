@@ -42,7 +42,9 @@ export function Navbar() {
             <a href="#" className="font-geist text-white hover:text-red-500 transition-colors duration-200 text-sm">
               Войти
             </a>
-            <Button className="bg-red-500 hover:bg-red-600 text-white font-geist border-0">Начать бесплатно</Button>
+            <a href="/tools">
+              <Button className="bg-red-500 hover:bg-red-600 text-white font-geist border-0">Попробовать</Button>
+            </a>
           </div>
 
           {/* Mobile menu button */}
@@ -92,9 +94,11 @@ export function Navbar() {
                 <Button variant="outline" className="w-full border-white/20 text-white bg-transparent">
                   Войти
                 </Button>
-                <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-geist border-0">
-                  Начать бесплатно
-                </Button>
+                <a href="/tools" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-geist border-0">
+                    Попробовать
+                  </Button>
+                </a>
               </div>
             </div>
           </div>
