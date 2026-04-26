@@ -1,0 +1,19 @@
+{
+  "tests": [
+    {
+      "name": "Запуск генерации трека",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "lyrics": "[Куплет 1]\nТестовый текст песни для проверки\nМузыка играет в тишине\n\n[Припев]\nПоём вместе, поём вслух\nКаждый звук живой",
+        "style": "pop",
+        "tempo": 100,
+        "extra_prompt": "female vocals, piano"
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "task_id": "string" },
+      "skipIfSecretsAbsent": ["SUNO_API_KEY"],
+      "bodyMatcher": "partial"
+    }
+  ]
+}

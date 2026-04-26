@@ -1,0 +1,18 @@
+{
+  "tests": [
+    {
+      "name": "Генерация текста поп-песни о любви",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "genre": "pop",
+        "mood": "love",
+        "prompt": "романтическая песня, главный герой встречает свою любовь на рассвете"
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "lyrics": "string" },
+      "skipIfSecretsAbsent": ["OPENROUTER_API_KEY"],
+      "bodyMatcher": "partial"
+    }
+  ]
+}

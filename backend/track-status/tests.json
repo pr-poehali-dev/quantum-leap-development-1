@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Проверка статуса без task_id",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

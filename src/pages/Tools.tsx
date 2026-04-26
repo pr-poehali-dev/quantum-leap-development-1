@@ -689,34 +689,91 @@ function SongTool() {
 
   const getMoods = () => moodsByGenre[genre] || moodsByGenre.pop
 
-  const generateLyrics = () => {
+  const [lyricsError, setLyricsError] = useState("")
+  const [trackError, setTrackError] = useState("")
+  const [audioUrl, setAudioUrl] = useState("")
+  const [extraPrompt, setExtraPrompt] = useState("")
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const generateLyrics = async () => {
     setLyricsLoading(true)
     setLyrics("")
-    setTimeout(() => {
-      const genreMap = LYRICS_SAMPLES[genre] || LYRICS_SAMPLES.pop
-      const sample = genreMap[mood] || Object.values(genreMap)[0] ||
-        `[Куплет 1]\nСлова рождаются из воздуха,\nМузыка живёт в каждом из нас,\nЭта песня — для тебя одного,\nЭтот миг — наш общий сейчас.\n\n[Припев]\nПоём вместе, поём вслух,\nКаждый звук — живой, не пух,\nМузыка — наш общий дух,\nПоём вместе, поём вслух.`
-      setLyrics(sample)
+    setLyricsError("")
+    try {
+      const res = await fetch("https://functions.poehali.dev/699a696d-408a-44f0-a0b6-7dc680e22994", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ genre, mood, prompt: lyricsPrompt }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Ошибка генерации")
+      setLyrics(data.lyrics)
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Неизвестная ошибка"
+      setLyricsError(msg)
+    } finally {
       setLyricsLoading(false)
-    }, 2000)
+    }
   }
 
-  const startTrack = () => {
+  const startTrack = async () => {
     if (!lyrics.trim()) return
     setTrackLoading(true)
     setTrackReady(false)
-    setTrackProgress(0)
-    const interval = setInterval(() => {
-      setTrackProgress((p) => {
-        if (p >= 100) {
-          clearInterval(interval)
-          setTrackLoading(false)
-          setTrackReady(true)
-          return 100
-        }
-        return p + 2
+    setTrackError("")
+    setAudioUrl("")
+    setTrackProgress(5)
+
+    try {
+      const res = await fetch("https://functions.poehali.dev/5eeb181b-c628-40b0-84db-69864f72d01b", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lyrics, style: trackStyle, tempo: tempo[0], extra_prompt: extraPrompt }),
       })
-    }, 80)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Ошибка запуска генерации")
+
+      const taskId = data.task_id
+      setTrackProgress(15)
+
+      // Polling статуса каждые 5 секунд
+      let elapsed = 0
+      pollRef.current = setInterval(async () => {
+        elapsed += 5
+        // Плавный прогресс до 90% пока ждём
+        setTrackProgress((p) => Math.min(p + 3, 90))
+
+        try {
+          const statusRes = await fetch(
+            `https://functions.poehali.dev/ff89f639-3ab3-4b52-850d-d299a6709a30?task_id=${taskId}`
+          )
+          const statusData = await statusRes.json()
+
+          if (statusData.audio_url) {
+            if (pollRef.current) clearInterval(pollRef.current)
+            setAudioUrl(statusData.audio_url)
+            setTrackProgress(100)
+            setTrackLoading(false)
+            setTrackReady(true)
+          } else if (elapsed > 300) {
+            // таймаут 5 минут
+            if (pollRef.current) clearInterval(pollRef.current)
+            throw new Error("Превышено время ожидания. Попробуйте ещё раз.")
+          }
+        } catch (pollErr: unknown) {
+          if (elapsed > 300) {
+            if (pollRef.current) clearInterval(pollRef.current)
+            const msg = pollErr instanceof Error ? pollErr.message : "Ошибка проверки статуса"
+            setTrackError(msg)
+            setTrackLoading(false)
+          }
+        }
+      }, 5000)
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Неизвестная ошибка"
+      setTrackError(msg)
+      setTrackLoading(false)
+    }
   }
 
   const waveHeights = Array.from({ length: 32 }, () => 4 + Math.floor(Math.random() * 20))
@@ -824,6 +881,13 @@ function SongTool() {
                   className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 min-h-[80px] resize-none"
                 />
               </div>
+
+              {lyricsError && (
+                <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400">
+                  <Icon name="AlertCircle" size={16} className="mt-0.5 flex-shrink-0" />
+                  {lyricsError}
+                </div>
+              )}
 
               <Button
                 onClick={generateLyrics}
@@ -950,10 +1014,19 @@ function SongTool() {
               Пожелания к звуку <span className="text-gray-600">(необязательно)</span>
             </label>
             <Textarea
+              value={extraPrompt}
+              onChange={(e) => setExtraPrompt(e.target.value)}
               placeholder="Например: живые инструменты, женский вокал, атмосферное вступление, гитарное соло в бридже..."
               className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 min-h-[80px] resize-none"
             />
           </div>
+
+          {trackError && (
+            <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400">
+              <Icon name="AlertCircle" size={16} className="mt-0.5 flex-shrink-0" />
+              {trackError}
+            </div>
+          )}
 
           <Button
             onClick={startTrack}
@@ -973,14 +1046,17 @@ function SongTool() {
             <div className="space-y-3">
               <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-red-500 to-orange-400 rounded-full transition-all duration-100"
+                  className="h-full bg-gradient-to-r from-red-500 to-orange-400 rounded-full transition-all duration-500"
                   style={{ width: `${trackProgress}%` }}
                 />
               </div>
               <div className="flex justify-between text-xs text-gray-500">
-                <span>{trackProgress < 30 ? "Анализирую текст..." : trackProgress < 60 ? "Генерирую мелодию..." : trackProgress < 85 ? "Добавляю инструменты..." : "Финальный микс..."}</span>
+                <span>
+                  {trackProgress < 20 ? "Отправляю запрос..." : trackProgress < 50 ? "ИИ пишет мелодию..." : trackProgress < 80 ? "Добавляю инструменты и вокал..." : "Финальный микс..."}
+                </span>
                 <span>{trackProgress}%</span>
               </div>
+              <p className="text-center text-gray-600 text-xs">Генерация обычно занимает 1–3 минуты</p>
             </div>
           )}
 
@@ -994,39 +1070,49 @@ function SongTool() {
                 <span className="text-gray-400 text-sm">{trackStyle} · {tempo[0]} BPM</span>
               </div>
 
-              {/* Обложка + плеер */}
+              {/* Обложка + визуализация */}
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-red-500/40 to-purple-600/40 border border-red-500/30 flex items-center justify-center flex-shrink-0">
                   <Icon name="Music2" size={26} className="text-red-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-white font-semibold mb-2 truncate">AI Song · {trackStyle}</div>
-                  {/* Волна */}
                   <div className="flex items-end gap-0.5 h-8">
                     {waveHeights.map((h, i) => (
-                      <div
-                        key={i}
-                        className="flex-1 rounded-sm bg-red-500/60"
-                        style={{ height: `${h}px` }}
-                      />
+                      <div key={i} className="flex-1 rounded-sm bg-red-500/60" style={{ height: `${h}px` }} />
                     ))}
                   </div>
                 </div>
               </div>
 
+              {/* Нативный аудиоплеер */}
+              {audioUrl && (
+                <audio
+                  controls
+                  src={audioUrl}
+                  className="w-full mt-2"
+                  style={{ accentColor: "#ef4444" }}
+                >
+                  Ваш браузер не поддерживает аудио.
+                </audio>
+              )}
+
               {/* Кнопки */}
               <div className="flex gap-3">
-                <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-500 hover:bg-red-600 rounded-xl text-white text-sm font-medium transition-colors">
-                  <Icon name="Play" size={16} /> Слушать
-                </button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-white/20 hover:border-white/40 rounded-xl text-gray-300 text-sm font-medium transition-colors">
-                  <Icon name="Download" size={16} /> Скачать MP3
-                </button>
+                {audioUrl && (
+                  <a
+                    href={audioUrl}
+                    download="ai-song.mp3"
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-white/20 hover:border-white/40 rounded-xl text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                  >
+                    <Icon name="Download" size={16} /> Скачать MP3
+                  </a>
+                )}
                 <button
-                  onClick={() => { setStep(1); setTrackReady(false); setTrackProgress(0) }}
-                  className="px-4 py-2.5 border border-white/10 hover:border-red-500/40 rounded-xl text-gray-500 hover:text-white text-sm transition-colors"
+                  onClick={() => { setStep(1); setTrackReady(false); setTrackProgress(0); setAudioUrl("") }}
+                  className="px-4 py-2.5 border border-white/10 hover:border-red-500/40 rounded-xl text-gray-500 hover:text-white text-sm transition-colors flex items-center gap-2"
                 >
-                  <Icon name="RefreshCw" size={16} />
+                  <Icon name="RefreshCw" size={16} /> Новый трек
                 </button>
               </div>
             </div>
