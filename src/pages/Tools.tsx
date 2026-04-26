@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -634,10 +634,414 @@ function VoiceTool() {
   )
 }
 
+// ─── Song Creator Tool ────────────────────────────────────────────────────────
+const LYRICS_SAMPLES: Record<string, Record<string, string>> = {
+  pop: {
+    love: `[Куплет 1]\nТы улыбаешься — и мир становится светлей,\nМои мысли только о тебе среди ночей,\nКаждый шаг навстречу — как первый снегопад,\nЯ не знаю как сказать, но ты мне очень рад.\n\n[Припев]\nЭто больше чем слова,\nЭто больше чем мечта,\nТы — моя весна,\nМоя любовь, моя звезда.\n\n[Куплет 2]\nРуки тянутся к тебе в вечерней тишине,\nЧувства новые горят в моей душе вполне,\nКаждый взгляд как целый мир, каждый вздох — как стих,\nНет на свете ничего прекрасней нас двоих.\n\n[Припев]\nЭто больше чем слова,\nЭто больше чем мечта,\nТы — моя весна,\nМоя любовь, моя звезда.\n\n[Бридж]\nОстановись, взгляни на небо,\nМы с тобой — как будто было всегда,\nИ пусть бегут года — я рядом,\nТы и я навсегда.`,
+    freedom: `[Куплет 1]\nОткрываю дверь, за окном рассвет,\nВпереди дорог — миллион побед,\nСброшены оковы прошлых давних лет,\nЯ иду вперёд — и пути назад здесь нет.\n\n[Припев]\nСвободен как ветер, лечу без границ,\nМой голос звучит — не упасть мне ниц,\nСвободен как ветер, открытый простор,\nЭта жизнь моя — я начну разговор.\n\n[Куплет 2]\nПусть вокруг шумит суетливый мир,\nЯ найду свой путь, я построю пир,\nКаждый день как дар, каждый миг — как стих,\nЯ живу сейчас — и ловлю этот тих.\n\n[Припев]\nСвободен как ветер, лечу без границ,\nМой голос звучит — не упасть мне ниц,\nСвободен как ветер, открытый простор,\nЭта жизнь моя — я начну разговор.`,
+  },
+  rock: {
+    fight: `[Куплет 1]\nМир горит — но я не гасну,\nСквозь огонь иду, мне ясно:\nНет пути назад отсюда,\nЯ — живое чудо.\n\n[Припев]\nЭто мой бой, мой огонь,\nНе сломать меня — не тронь!\nЯ встаю из пепла вновь,\nЭто воля, это кровь!\n\n[Куплет 2]\nТысяча ударов — выстоял,\nКаждый шрам — мой личный выигрыш,\nНебо надо мной — открытое,\nСердце моё — незабитое.\n\n[Припев]\nЭто мой бой, мой огонь,\nНе сломать меня — не тронь!\nЯ встаю из пепла вновь,\nЭто воля, это кровь!`,
+    night: `[Куплет 1]\nНочь накрывает город тенью,\nГитара плачет по весенью,\nНеон мигает — ты одна,\nИ эта боль на всех одна.\n\n[Припев]\nТёмная ночь — моя подруга,\nЗвук электричества — как вьюга,\nКричу в пустоту — молчит она,\nТолько музыка — одна, одна.\n\n[Соло]\n[гитарное соло]\n\n[Куплет 2]\nАсфальт мокрый отражает\nОгни тех, кто всё теряет,\nНо рифф гитарный — не сдаётся,\nИ сердце вместе с ним бьётся.`,
+  },
+  "r&b": {
+    vibe: `[Куплет 1]\nПоздний вечер, свет приглушен,\nТвой силуэт — и я заслушан,\nМузыка течёт рекой,\nВсе слова — про нас с тобой.\n\n[Припев]\nЭтот вайб — только наш,\nЗвук и ритм — общий паж,\nТанцуй со мной до утра,\nМы — огонь, мы — игра.\n\n[Куплет 2]\nТвои движения как стихи,\nМои руки — без лихи,\nВ этом танце — только мы,\nВ этом трансе — нет зимы.\n\n[Аутро]\nOoh, yeah, tonight...\nТолько ты и я в этом свете,\nВсё что нужно — здесь, в ответе.`,
+  },
+  electronic: {
+    future: `[Интро — инструментал]\n\n[Куплет 1]\nБиты пульсируют в венах,\nМир цифровой — без измены,\nКоды и звуки — мой язык,\nЯ — электрический дневник.\n\n[Дроп]\nDrop it! Let it go!\nЭтот ритм — как поток,\nВ такт — твоё дыханье,\nЭто — наше зданье.\n\n[Куплет 2]\nНейросети ткут узоры,\nЧеловек и код — без ссоры,\nМы — будущее прямо здесь,\nНаша песня — новая смесь.\n\n[Дроп]\nDrop it! Let it go!\nЭтот ритм — как поток,\nВ такт — твоё дыханье,\nЭто — наше зданье.`,
+  },
+}
+
+function SongTool() {
+  // Шаг 1 — текст
+  const [step, setStep] = useState<1 | 2>(1)
+  const [lyricsMode, setLyricsMode] = useState<"generate" | "manual">("generate")
+  const [lyricsPrompt, setLyricsPrompt] = useState("")
+  const [genre, setGenre] = useState("pop")
+  const [mood, setMood] = useState("love")
+  const [lyrics, setLyrics] = useState("")
+  const [lyricsLoading, setLyricsLoading] = useState(false)
+
+  // Шаг 2 — трек
+  const [trackStyle, setTrackStyle] = useState("pop")
+  const [tempo, setTempo] = useState([100])
+  const [trackLoading, setTrackLoading] = useState(false)
+  const [trackReady, setTrackReady] = useState(false)
+  const [trackProgress, setTrackProgress] = useState(0)
+
+  const genres = [
+    { value: "pop", label: "Pop" },
+    { value: "rock", label: "Rock" },
+    { value: "r&b", label: "R&B" },
+    { value: "electronic", label: "Electronic" },
+    { value: "folk", label: "Folk" },
+    { value: "hip-hop", label: "Hip-Hop" },
+  ]
+
+  const moodsByGenre: Record<string, { value: string; label: string }[]> = {
+    pop: [{ value: "love", label: "Любовь" }, { value: "freedom", label: "Свобода" }, { value: "summer", label: "Лето" }],
+    rock: [{ value: "fight", label: "Борьба" }, { value: "night", label: "Ночь" }, { value: "road", label: "Дорога" }],
+    "r&b": [{ value: "vibe", label: "Вайб" }, { value: "love", label: "Любовь" }, { value: "night", label: "Ночь" }],
+    electronic: [{ value: "future", label: "Будущее" }, { value: "night", label: "Ночь" }, { value: "freedom", label: "Свобода" }],
+    folk: [{ value: "home", label: "Дом" }, { value: "road", label: "Дорога" }, { value: "love", label: "Любовь" }],
+    "hip-hop": [{ value: "fight", label: "Борьба" }, { value: "freedom", label: "Свобода" }, { value: "night", label: "Ночь" }],
+  }
+
+  const getMoods = () => moodsByGenre[genre] || moodsByGenre.pop
+
+  const generateLyrics = () => {
+    setLyricsLoading(true)
+    setLyrics("")
+    setTimeout(() => {
+      const genreMap = LYRICS_SAMPLES[genre] || LYRICS_SAMPLES.pop
+      const sample = genreMap[mood] || Object.values(genreMap)[0] ||
+        `[Куплет 1]\nСлова рождаются из воздуха,\nМузыка живёт в каждом из нас,\nЭта песня — для тебя одного,\nЭтот миг — наш общий сейчас.\n\n[Припев]\nПоём вместе, поём вслух,\nКаждый звук — живой, не пух,\nМузыка — наш общий дух,\nПоём вместе, поём вслух.`
+      setLyrics(sample)
+      setLyricsLoading(false)
+    }, 2000)
+  }
+
+  const startTrack = () => {
+    if (!lyrics.trim()) return
+    setTrackLoading(true)
+    setTrackReady(false)
+    setTrackProgress(0)
+    const interval = setInterval(() => {
+      setTrackProgress((p) => {
+        if (p >= 100) {
+          clearInterval(interval)
+          setTrackLoading(false)
+          setTrackReady(true)
+          return 100
+        }
+        return p + 2
+      })
+    }, 80)
+  }
+
+  const waveHeights = Array.from({ length: 32 }, () => 4 + Math.floor(Math.random() * 20))
+
+  return (
+    <div className="space-y-0">
+      {/* Stepper */}
+      <div className="flex items-center gap-0 mb-8">
+        {[{ n: 1, label: "Текст песни" }, { n: 2, label: "Создать трек" }].map(({ n, label }, i) => (
+          <div key={n} className="flex items-center flex-1">
+            <button
+              onClick={() => { if (n === 2 && !lyrics.trim()) return; setStep(n as 1 | 2) }}
+              className="flex items-center gap-2 group"
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-200 ${
+                step === n
+                  ? "bg-red-500 border-red-500 text-white"
+                  : lyrics.trim() && n === 2
+                  ? "border-red-500/60 text-red-400 hover:bg-red-500/10"
+                  : "border-white/20 text-gray-500"
+              }`}>
+                {step > n && lyrics ? <Icon name="Check" size={14} /> : n}
+              </div>
+              <span className={`text-sm font-medium transition-colors duration-200 ${step === n ? "text-white" : "text-gray-500"}`}>
+                {label}
+              </span>
+            </button>
+            {i === 0 && (
+              <div className={`flex-1 h-px mx-3 transition-colors duration-300 ${lyrics.trim() ? "bg-red-500/50" : "bg-white/10"}`} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Шаг 1: текст ── */}
+      {step === 1 && (
+        <div className="space-y-6">
+          {/* Режим */}
+          <div className="flex gap-2 p-1 bg-white/5 rounded-xl">
+            <button
+              onClick={() => setLyricsMode("generate")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${lyricsMode === "generate" ? "bg-red-500 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              <Icon name="Sparkles" size={14} /> Сгенерировать автоматически
+            </button>
+            <button
+              onClick={() => setLyricsMode("manual")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${lyricsMode === "manual" ? "bg-red-500 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              <Icon name="PenLine" size={14} /> Написать самому
+            </button>
+          </div>
+
+          {lyricsMode === "generate" ? (
+            <>
+              {/* Жанр */}
+              <div>
+                <label className="text-sm text-gray-400 mb-2 block">Жанр</label>
+                <div className="flex flex-wrap gap-2">
+                  {genres.map((g) => (
+                    <button
+                      key={g.value}
+                      onClick={() => { setGenre(g.value); setMood(getMoods()[0]?.value || "love") }}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                        genre === g.value
+                          ? "bg-red-500 border-red-500 text-white"
+                          : "border-white/10 text-gray-400 hover:border-red-500/40 hover:text-white"
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Тема */}
+              <div>
+                <label className="text-sm text-gray-400 mb-2 block">Тема / настроение</label>
+                <div className="flex flex-wrap gap-2">
+                  {getMoods().map((m) => (
+                    <button
+                      key={m.value}
+                      onClick={() => setMood(m.value)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                        mood === m.value
+                          ? "bg-red-500/20 border-red-500 text-red-400"
+                          : "border-white/10 text-gray-400 hover:border-red-500/30 hover:text-white"
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Свободный запрос */}
+              <div>
+                <label className="text-sm text-gray-400 mb-2 block">
+                  Дополнительный запрос <span className="text-gray-600">(необязательно)</span>
+                </label>
+                <Textarea
+                  value={lyricsPrompt}
+                  onChange={(e) => setLyricsPrompt(e.target.value)}
+                  placeholder="Например: песня о расставании, но с надеждой на будущее; главный герой — молодой путешественник..."
+                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 min-h-[80px] resize-none"
+                />
+              </div>
+
+              <Button
+                onClick={generateLyrics}
+                disabled={lyricsLoading}
+                className="bg-red-500 hover:bg-red-600 text-white w-full py-3"
+              >
+                {lyricsLoading
+                  ? <span className="flex items-center gap-2"><Icon name="Loader2" size={16} className="animate-spin" /> Пишу текст...</span>
+                  : <span className="flex items-center gap-2"><Icon name="Sparkles" size={16} /> Сгенерировать текст</span>
+                }
+              </Button>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="text-sm text-gray-400 mb-2 block">Ваш текст песни</label>
+                <Textarea
+                  value={lyrics}
+                  onChange={(e) => setLyrics(e.target.value)}
+                  placeholder={"[Куплет 1]\nВаши строки...\n\n[Припев]\nВаш припев..."}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 min-h-[240px] resize-none font-space-mono text-sm"
+                />
+              </div>
+              <div className="text-right text-xs text-gray-600">{lyrics.length} символов</div>
+            </>
+          )}
+
+          {/* Результат текста */}
+          {lyrics && lyricsMode === "generate" && (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Текст готов</Badge>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => navigator.clipboard.writeText(lyrics)}
+                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-sm"
+                  >
+                    <Icon name="Copy" size={14} /> Копировать
+                  </button>
+                  <button
+                    onClick={() => setLyrics("")}
+                    className="text-gray-500 hover:text-white transition-colors flex items-center gap-1 text-sm"
+                  >
+                    <Icon name="RefreshCw" size={14} /> Перегенерировать
+                  </button>
+                </div>
+              </div>
+              <pre className="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap font-space-mono max-h-64 overflow-y-auto">{lyrics}</pre>
+              <div className="pt-2 border-t border-white/10">
+                <label className="text-xs text-gray-500 mb-2 block">Можно отредактировать перед созданием трека</label>
+                <Textarea
+                  value={lyrics}
+                  onChange={(e) => setLyrics(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white text-sm min-h-[120px] resize-none font-space-mono"
+                />
+              </div>
+            </div>
+          )}
+
+          {lyrics && (
+            <Button
+              onClick={() => setStep(2)}
+              className="bg-white/10 hover:bg-white/20 text-white w-full py-3 border border-white/20"
+            >
+              <span className="flex items-center gap-2">
+                Дальше — создать трек <Icon name="ArrowRight" size={16} />
+              </span>
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* ── Шаг 2: трек ── */}
+      {step === 2 && (
+        <div className="space-y-6">
+          {/* Превью текста */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-gray-500 uppercase tracking-wider">Текст песни</span>
+              <button onClick={() => setStep(1)} className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1">
+                <Icon name="Pencil" size={12} /> Изменить
+              </button>
+            </div>
+            <pre className="text-gray-300 text-xs leading-relaxed whitespace-pre-wrap font-space-mono max-h-28 overflow-y-auto">{lyrics}</pre>
+          </div>
+
+          {/* Музыкальный стиль */}
+          <div>
+            <label className="text-sm text-gray-400 mb-2 block">Музыкальный стиль трека</label>
+            <div className="flex flex-wrap gap-2">
+              {genres.map((g) => (
+                <button
+                  key={g.value}
+                  onClick={() => setTrackStyle(g.value)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                    trackStyle === g.value
+                      ? "bg-red-500 border-red-500 text-white"
+                      : "border-white/10 text-gray-400 hover:border-red-500/40 hover:text-white"
+                  }`}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Темп */}
+          <div>
+            <label className="text-sm text-gray-400 mb-2 block">
+              Темп: <span className="text-white font-mono">{tempo[0]} BPM</span>{" "}
+              <span className="text-gray-600 text-xs">
+                {tempo[0] < 80 ? "· медленный" : tempo[0] < 110 ? "· средний" : tempo[0] < 140 ? "· быстрый" : "· очень быстрый"}
+              </span>
+            </label>
+            <Slider value={tempo} onValueChange={setTempo} min={60} max={180} step={5} className="w-full" />
+            <div className="flex justify-between text-xs text-gray-600 mt-1">
+              <span>60 BPM</span><span>120 BPM</span><span>180 BPM</span>
+            </div>
+          </div>
+
+          {/* Дополнительно */}
+          <div>
+            <label className="text-sm text-gray-400 mb-2 block">
+              Пожелания к звуку <span className="text-gray-600">(необязательно)</span>
+            </label>
+            <Textarea
+              placeholder="Например: живые инструменты, женский вокал, атмосферное вступление, гитарное соло в бридже..."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 min-h-[80px] resize-none"
+            />
+          </div>
+
+          <Button
+            onClick={startTrack}
+            disabled={trackLoading || trackReady}
+            className="bg-red-500 hover:bg-red-600 text-white w-full py-3"
+          >
+            {trackLoading
+              ? <span className="flex items-center gap-2"><Icon name="Loader2" size={16} className="animate-spin" /> Создаю трек... {trackProgress}%</span>
+              : trackReady
+              ? <span className="flex items-center gap-2"><Icon name="CheckCircle" size={16} /> Трек готов!</span>
+              : <span className="flex items-center gap-2"><Icon name="Music" size={16} /> Создать трек</span>
+            }
+          </Button>
+
+          {/* Прогресс */}
+          {trackLoading && (
+            <div className="space-y-3">
+              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-red-500 to-orange-400 rounded-full transition-all duration-100"
+                  style={{ width: `${trackProgress}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>{trackProgress < 30 ? "Анализирую текст..." : trackProgress < 60 ? "Генерирую мелодию..." : trackProgress < 85 ? "Добавляю инструменты..." : "Финальный микс..."}</span>
+                <span>{trackProgress}%</span>
+              </div>
+            </div>
+          )}
+
+          {/* Результат трека */}
+          {trackReady && (
+            <div className="bg-gradient-to-br from-red-500/10 to-purple-500/10 border border-red-500/30 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-sm px-3 py-1">
+                  <Icon name="Music2" size={12} className="inline mr-1" /> Трек готов
+                </Badge>
+                <span className="text-gray-400 text-sm">{trackStyle} · {tempo[0]} BPM</span>
+              </div>
+
+              {/* Обложка + плеер */}
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-red-500/40 to-purple-600/40 border border-red-500/30 flex items-center justify-center flex-shrink-0">
+                  <Icon name="Music2" size={26} className="text-red-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white font-semibold mb-2 truncate">AI Song · {trackStyle}</div>
+                  {/* Волна */}
+                  <div className="flex items-end gap-0.5 h-8">
+                    {waveHeights.map((h, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 rounded-sm bg-red-500/60"
+                        style={{ height: `${h}px` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Кнопки */}
+              <div className="flex gap-3">
+                <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-500 hover:bg-red-600 rounded-xl text-white text-sm font-medium transition-colors">
+                  <Icon name="Play" size={16} /> Слушать
+                </button>
+                <button className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-white/20 hover:border-white/40 rounded-xl text-gray-300 text-sm font-medium transition-colors">
+                  <Icon name="Download" size={16} /> Скачать MP3
+                </button>
+                <button
+                  onClick={() => { setStep(1); setTrackReady(false); setTrackProgress(0) }}
+                  className="px-4 py-2.5 border border-white/10 hover:border-red-500/40 rounded-xl text-gray-500 hover:text-white text-sm transition-colors"
+                >
+                  <Icon name="RefreshCw" size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Tools Page ──────────────────────────────────────────────────────────
 const tabs = [
   { value: "text", label: "Тексты", icon: "FileText" },
   { value: "social", label: "Соцсети", icon: "Share2" },
+  { value: "song", label: "Песня", icon: "Mic2" },
   { value: "music", label: "Музыка", icon: "Music" },
   { value: "clip", label: "Клипы", icon: "Clapperboard" },
   { value: "voice", label: "Мой голос", icon: "Mic" },
@@ -686,6 +1090,14 @@ export default function Tools() {
                 <p className="text-gray-400 text-sm">Готовые посты с хэштегами для Instagram, VK, Telegram и TikTok</p>
               </div>
               <SocialTool />
+            </TabsContent>
+
+            <TabsContent value="song" className="mt-0 focus-visible:outline-none">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-white mb-1">Создание песни</h2>
+                <p className="text-gray-400 text-sm">Шаг 1 — генерируем текст по запросу или пишем сами. Шаг 2 — создаём полноценный трек</p>
+              </div>
+              <SongTool />
             </TabsContent>
 
             <TabsContent value="music" className="mt-0 focus-visible:outline-none">
